@@ -75,8 +75,13 @@ struct overflow64cases<uint64_t>
     };
 };
 
+// warning C5041: 'values': out-of-line definition for constexpr static data member is not needed and is deprecated in C++17 (compiling source file ../../thirdparty/owemdjee/c4core/test/test_charconv.cpp)
+#if __cplusplus < 202000L
+
 constexpr const overflow64case<int64_t> overflow64cases<int64_t>::values[];
 constexpr const overflow64case<uint64_t> overflow64cases<uint64_t>::values[];
+
+#endif
 
 #undef oc
 
@@ -1846,6 +1851,10 @@ struct numbers<uint64_t>
     };
 };
 
+// warning C5041: 'vals': out-of-line definition for constexpr static data member is not needed and is deprecated in C++17 (compiling source file ../../thirdparty/owemdjee/c4core/test/test_charconv.cpp)
+
+#if __cplusplus < 202000L
+
 C4_INLINE_CONSTEXPR const number_case<int8_t> numbers<int8_t>::vals[];
 C4_INLINE_CONSTEXPR const number_case<uint8_t> numbers<uint8_t>::vals[];
 
@@ -1857,6 +1866,8 @@ C4_INLINE_CONSTEXPR const number_case<uint32_t> numbers<uint32_t>::vals[];
 
 C4_INLINE_CONSTEXPR const number_case<int64_t> numbers<int64_t>::vals[];
 C4_INLINE_CONSTEXPR const number_case<uint64_t> numbers<uint64_t>::vals[];
+
+#endif
 
 C4_SUPPRESS_WARNING_MSVC_POP
 

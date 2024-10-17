@@ -149,7 +149,7 @@ double doit(const char *s)
 #define C4_TO_REAL(s) 0
 #endif
 
-int main()
+int main(void)
 {
     #define BUFSIZE 128
     char buf[BUFSIZE];

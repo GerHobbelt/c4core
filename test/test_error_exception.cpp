@@ -128,4 +128,6 @@ TEST_CASE("error.exception_from_callback")
     CHECK_FAILURE_IS(test_exception(6), std::runtime_error, 100);
 }
 
+// fixes warning C5032: detected #pragma warning(push) with no corresponding #pragma warning(pop)
+C4_SUPPRESS_WARNING_MSVC_POP
 C4_SUPPRESS_WARNING_MSVC_POP

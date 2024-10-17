@@ -74,7 +74,7 @@ struct fail_type__ {};
 #       endif
 #   elif defined(__GNUC__)
 #   endif
-#   include <c4/ext/debugbreak/debugbreak.h>
+#   include <debugbreak/debugbreak.h>
 #   define C4_DEBUG_BREAK() if(c4::is_debugger_attached()) { ::debug_break(); }
 #   ifdef __clang__
 #       pragma clang diagnostic pop

@@ -263,7 +263,7 @@ struct non_pod
     const char *name;
 };
 
-int main()
+int main(void)
 {
     foo<float>(); // prints "pod type"
     foo<non_pod>(); // prints "nonpod type"

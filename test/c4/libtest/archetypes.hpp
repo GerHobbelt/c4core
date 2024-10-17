@@ -375,7 +375,7 @@ struct MemOwnerAlloc
         EXPECT_NE(mem, that.mem);
     }
 
-    void free()
+    void release()
     {
         alloc_traits::destroy(m_alloc, mem);
         alloc_traits::deallocate(m_alloc, mem, 1);
@@ -384,7 +384,7 @@ struct MemOwnerAlloc
     ~MemOwnerAlloc()
     {
         if(!mem) return;
-        free();
+        release();
     }
 
     MemOwnerAlloc() : m_alloc(&mr)
@@ -428,7 +428,7 @@ struct MemOwnerAlloc
     {
         if(mem)
         {
-            free();
+            release();
         }
         mem = that.mem;
         that.mem = nullptr;

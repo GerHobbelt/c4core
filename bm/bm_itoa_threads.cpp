@@ -348,7 +348,7 @@ BMTHREADS(c4_to_chars);
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 
-int main(int argc, char *argv[])
+int main(int argc, const char **argv)
 {
     bm::Initialize(&argc, argv);
     bm::RunSpecifiedBenchmarks();

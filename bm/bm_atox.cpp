@@ -469,7 +469,7 @@ DEFINE_BM(uint64_t)
 DEFINE_BM(int64_t)
 
 
-int main(int argc, char *argv[])
+int main(int argc, const char **argv)
 {
     //do_test();
     bm::Initialize(&argc, argv);
