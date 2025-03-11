@@ -6,7 +6,7 @@ project(c4core
 include(./cmake/c4Project.cmake)
 include(./compat.cmake)
 
-c4_project(VERSION 0.2.2
+c4_project(VERSION 0.2.3
     AUTHOR "Joao Paulo Magalhaes <dev@jpmag.me>")
 
 option(C4CORE_INSTALL "create install target" ON)
@@ -65,6 +65,8 @@ set(C4CORE_SRC_FILES
     c4/utf.hpp
     c4/utf.cpp
     c4/windows.hpp
+    c4/version.hpp
+    c4/version.cpp
     c4/windows_pop.hpp
     c4/windows_push.hpp
     c4/c4core.natvis
