@@ -1117,7 +1117,7 @@ C4_ALWAYS_INLINE size_t itoa(substr buf, T v) noexcept
     // will overflow, so treat the min as a special case
     if(C4_LIKELY(v != std::numeric_limits<T>::min()))
     {
-        v = -v;
+        v = (T)-v;
         unsigned digits = digits_dec(v);
         if(C4_LIKELY(buf.len >= digits + 1u))
         {
@@ -1152,7 +1152,7 @@ C4_ALWAYS_INLINE size_t itoa(substr buf, T v, T radix) noexcept
         unsigned pos = 0;
         if(v < 0)
         {
-            v = -v;
+            v = (T)-v;
             if(C4_LIKELY(buf.len > 0))
                 buf.str[pos] = '-';
             ++pos;
@@ -1229,7 +1229,7 @@ C4_ALWAYS_INLINE size_t itoa(substr buf, T v, T radix, size_t num_digits) noexce
         unsigned pos = 0;
         if(v < 0)
         {
-            v = -v;
+            v = (T)-v;
             if(C4_LIKELY(buf.len > 0))
                 buf.str[pos] = '-';
             ++pos;
