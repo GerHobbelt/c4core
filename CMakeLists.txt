@@ -6,7 +6,7 @@ project(c4core
 include(./cmake/c4Project.cmake)
 include(./compat.cmake)
 
-c4_project(VERSION 0.2.8
+c4_project(VERSION 0.2.10
     AUTHOR "Joao Paulo Magalhaes <dev@jpmag.me>")
 
 option(C4CORE_INSTALL "create install target" ON)
@@ -48,6 +48,8 @@ set(C4CORE_SRC_FILES
     c4/preprocessor.hpp
     c4/restrict.hpp
     c4/span.hpp
+    c4/std/span.hpp
+    c4/std/span_fwd.hpp
     c4/std/std.hpp
     c4/std/std_fwd.hpp
     c4/std/string.hpp
@@ -130,8 +132,9 @@ function(c4core_setup_clang_tidy rootdir)
         list(FILTER srcs EXCLUDE REGEX ${e})
     endforeach()
     set(cmd ${srcs} -p ${CMAKE_BINARY_DIR}
-            "--config-file=${rootdir}/.clang-tidy"
-            "--header-filter=${rootdir}/src/c4/.*pp|${rootdir}/src/c4/std/.*pp")
+        "--extra-arg=-DCLANG_TIDY"  # https://stackoverflow.com/questions/62838193/clang-tidy-10-is-ignoring-my-nolint-commands
+        "--config-file=${rootdir}/.clang-tidy"
+        "--header-filter=${rootdir}/src/c4/.*pp|${rootdir}/src/c4/std/.*pp")
     add_custom_target(c4core-clang-tidy
         COMMAND ${CMAKE_COMMAND} -E cat ${CMAKE_BINARY_DIR}/compile_commands.json
         COMMAND ${CLANG_TIDY} --version
