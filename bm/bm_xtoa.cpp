@@ -1596,6 +1596,7 @@ void do_test()
 int main(int argc, char *argv[])
 {
     //do_test();
+    bm::MaybeReenterWithoutASLR(argc, argv);
     bm::Initialize(&argc, argv);
     bm::RunSpecifiedBenchmarks();
     return 0;
