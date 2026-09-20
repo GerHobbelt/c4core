@@ -848,122 +848,84 @@ public:
 public:
 
     /** true if the first character of the string is @p c */
-    bool begins_with(const C c) const
+    bool begins_with(const C c) const noexcept
     {
+        C4_SUPPRESS_WARNING_GCC_PUSH
         #if defined(__GNUC__) && (__GNUC__ >= 6)
-        C4_SUPPRESS_WARNING_GCC_WITH_PUSH("-Wnull-dereference")
+        C4_SUPPRESS_WARNING_GCC("-Wnull-dereference")
         #endif
-        return len > 0 ? str[0] == c : false;
-        #if defined(__GNUC__) && (__GNUC__ >= 6)
+        return len && str[0] == c;
         C4_SUPPRESS_WARNING_GCC_POP
-        #endif
     }
 
     /** true if the first @p num characters of the string are @p c */
-    bool begins_with(const C c, size_t num) const
+    bool begins_with(const C c, size_t num) const noexcept
     {
         if(len < num)
-        {
             return false;
-        }
         for(size_t i = 0; i < num; ++i)
-        {
             if(str[i] != c)
-            {
                 return false;
-            }
-        }
-        return true;
+        return num > 0;
     }
 
     /** true if the string begins with the given @p pattern */
-    bool begins_with(ro_substr pattern) const
+    bool begins_with(ro_substr pattern) const noexcept
     {
         if(len < pattern.len)
-        {
             return false;
-        }
         for(size_t i = 0; i < pattern.len; ++i)
-        {
             if(str[i] != pattern.str[i])
-            {
                 return false;
-            }
-        }
-        return true;
+        return pattern.len > 0;
     }
 
     /** true if the first character of the string is any of the given @p chars */
-    bool begins_with_any(ro_substr chars) const
+    bool begins_with_any(ro_substr chars) const noexcept
     {
-        if(len == 0)
-        {
-            return false;
-        }
-        for(size_t i = 0; i < chars.len; ++i)
-        {
-            if(str[0] == chars.str[i])
-            {
-                return true;
-            }
-        }
+        if(len)
+            for(size_t i = 0; i < chars.len; ++i)
+                if(str[0] == chars.str[i])
+                    return true;
         return false;
     }
 
+
     /** true if the last character of the string is @p c */
-    bool ends_with(const C c) const
+    bool ends_with(const C c) const noexcept
     {
-        return len > 0 ? str[len-1] == c : false;
+        return len && str[len-1] == c;
     }
 
     /** true if the last @p num characters of the string are @p c */
-    bool ends_with(const C c, size_t num) const
+    bool ends_with(const C c, const size_t num) const noexcept
     {
         if(len < num)
-        {
             return false;
-        }
         for(size_t i = len - num; i < len; ++i)
-        {
             if(str[i] != c)
-            {
                 return false;
-            }
-        }
-        return true;
+        return num > 0;
     }
 
     /** true if the string ends with the given @p pattern */
-    bool ends_with(ro_substr pattern) const
+    bool ends_with(ro_substr pattern) const noexcept
     {
         if(len < pattern.len)
-        {
             return false;
-        }
         for(size_t i = 0, s = len-pattern.len; i < pattern.len; ++i)
-        {
             if(str[s+i] != pattern[i])
-            {
                 return false;
-            }
-        }
-        return true;
+        return pattern.len > 0;
     }
 
     /** true if the last character of the string is any of the given @p chars */
-    bool ends_with_any(ro_substr chars) const
+    bool ends_with_any(ro_substr chars) const noexcept
     {
-        if(len == 0)
-        {
-            return false;
-        }
-        for(size_t i = 0; i < chars.len; ++i)
-        {
-            if(str[len - 1] == chars[i])
-            {
-                return true;
-            }
-        }
+        if(len)
+            for(size_t i = 0; i < chars.len; ++i)
+                if(str[len - 1] == chars[i])
+                    return true;
         return false;
     }
 
@@ -2390,6 +2352,11 @@ public:
 
 }; // template class basic_substring
 
+#ifdef __DOXYGEN__
+using substr = basic_substring<char>; /**< a mutable string view */
+using csubstr = basic_substring<const char>; /**< an immutable string view */
+#endif
+
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -2400,33 +2367,33 @@ public:
  *
  * @ref c4::to_substr() and @ref c4::to_csubstr() are used in generic
  * code like @ref c4::format(). They enable the user to provide an
- * entry point for the construction of substrings from custom types
+ * entry point for the construction of substrings from custom types.
  *
  * @{ */
 
 
-/** neutral version for use in generic code */
-C4_ALWAYS_INLINE substr to_substr(substr s) noexcept { return s; }
-/** neutral version for use in generic code */
-C4_ALWAYS_INLINE csubstr to_csubstr(substr s) noexcept { return csubstr{s.str, s.len}; }
-/** neutral version for use in generic code */
-C4_ALWAYS_INLINE csubstr to_csubstr(csubstr s) noexcept { return s; }
-
-
-/** neutral version for use in generic code */
+/** @defgroup doc_substr_adapters_literal create substrings from a char literal
+ * @{ */
 template<size_t N> C4_ALWAYS_INLINE substr to_substr(char (&s)[N]) noexcept
 {
     return substr(s, N-1);
 }
-
 template<size_t N> C4_ALWAYS_INLINE csubstr to_csubstr(const char (&s)[N]) noexcept
 {
     return csubstr(s, N-1);
 }
+/** @} */
 
 
-/** Create a substring from a char*-like pointer
- * @note this overload uses SFINAE to prevent it from overriding the array overload
+/** @defgroup doc_substr_adapters_cstring create substrings from C strings
+ * @{ */
+
+/** Create a substring from a C-string (char*-like pointer)
+ *
+ * @note this overload uses SFINAE to prevent it from overriding the
+ * literal/array overload. U must be is a non-const-char pointer for
+ * this function to be considered in the overload set.
+ *
  * @see For a more detailed explanation on why the plain overloads cannot
  * coexist, see http://cplusplus.bordoon.com/specializeForCharacterArrays.html */
 template<class U> C4_ALWAYS_INLINE auto to_substr(U s) noexcept
@@ -2437,7 +2404,9 @@ template<class U> C4_ALWAYS_INLINE auto to_substr(U s) noexcept
 
 /** Create a substring from a const char*-like pointer
  *
- * @note this overload uses SFINAE to prevent it from overriding the array overload
+ * @note this overload uses SFINAE to prevent it from overriding the
+ * literal/array overload
+ *
  * @see For a more detailed explanation on why the plain overloads cannot
  * coexist, see http://cplusplus.bordoon.com/specializeForCharacterArrays.html */
 template<class U> C4_ALWAYS_INLINE auto to_csubstr(U s) noexcept
@@ -2445,6 +2414,15 @@ template<class U> C4_ALWAYS_INLINE auto to_csubstr(U s) noexcept
 {
     return csubstr(s);
 }
+/** @} */
+
+
+/** @defgroup doc_substr_adapters_neutral neutral version for use in generic code
+ * @{ */
+C4_ALWAYS_INLINE substr to_substr(substr s) noexcept { return s; }
+C4_ALWAYS_INLINE csubstr to_csubstr(substr s) noexcept { return csubstr{s.str, s.len}; }
+C4_ALWAYS_INLINE csubstr to_csubstr(csubstr s) noexcept { return s; }
+/** @} */
 
 /** @} */
 
@@ -2453,10 +2431,11 @@ template<class U> C4_ALWAYS_INLINE auto to_csubstr(U s) noexcept
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 
-/** @defgroup doc_substr_cmp substr comparison operators
+/** @defgroup doc_substr_cmp substr left-comparison operators
  * @{ */
 
-/** @name single character @{ */
+/** @defgroup doc_substr_cmp_singlechar left-compare a single char with a csubstr
+ * @{ */
 template<typename C> inline bool operator== (const char c, basic_substring<C> const that) noexcept { return that.compare(c) == 0; }
 template<typename C> inline bool operator!= (const char c, basic_substring<C> const that) noexcept { return that.compare(c) != 0; }
 template<typename C> inline bool operator<  (const char c, basic_substring<C> const that) noexcept { return that.compare(c) >  0; }
@@ -2465,7 +2444,8 @@ template<typename C> inline bool operator<= (const char c, basic_substring<C> co
 template<typename C> inline bool operator>= (const char c, basic_substring<C> const that) noexcept { return that.compare(c) <= 0; }
 /** @} */
 
-/** @name character array/literal @{ */
+/** @defgroup doc_substr_cmp_literal left-compare a string literal with a csubstr
+ * @{ */
 template<typename C, size_t N> inline bool operator== (const char (&arr)[N], basic_substring<C> const that) noexcept { return that.compare(arr, N-1) == 0; }
 template<typename C, size_t N> inline bool operator!= (const char (&arr)[N], basic_substring<C> const that) noexcept { return that.compare(arr, N-1) != 0; }
 template<typename C, size_t N> inline bool operator<  (const char (&arr)[N], basic_substring<C> const that) noexcept { return that.compare(arr, N-1) >  0; }
@@ -2474,7 +2454,7 @@ template<typename C, size_t N> inline bool operator<= (const char (&arr)[N], bas
 template<typename C, size_t N> inline bool operator>= (const char (&arr)[N], basic_substring<C> const that) noexcept { return that.compare(arr, N-1) <= 0; }
 /** @} */
 
-/** @name C string (character pointer, zero terminated)
+/** @defgroup doc_substr_cmp_cstring left-compare a C-string with a csubstr
  * @{ */
 template<typename U, typename C> inline auto operator== (U c_str, basic_substring<C> const that) noexcept -> typename std::enable_if<is_compatible_char_ptr<U, C>::value, bool>::type { return that.compare(c_str, strlen(c_str)) == 0; }
 template<typename U, typename C> inline auto operator!= (U c_str, basic_substring<C> const that) noexcept -> typename std::enable_if<is_compatible_char_ptr<U, C>::value, bool>::type { return that.compare(c_str, strlen(c_str)) != 0; }
@@ -2496,15 +2476,15 @@ template<typename U, typename C> inline auto operator>= (U c_str, basic_substrin
  * @see https://github.com/onqtam/doctest/pull/431 */
 #ifndef C4_SUBSTR_NO_OSTREAM_LSHIFT
 
-C4_SUPPRESS_WARNING_GCC_CLANG_WITH_PUSH("-Wsign-conversion")
-/** output the string to a stream */
+/** output the string to an ostream-like type */
 template<class OStream, class C>
 inline OStream& operator<< (OStream& os, basic_substring<C> s)
 {
+    C4_SUPPRESS_WARNING_GCC_CLANG_WITH_PUSH("-Wsign-conversion")
     os.write(s.str, s.len);
+    C4_SUPPRESS_WARNING_GCC_CLANG_POP
     return os;
 }
-C4_SUPPRESS_WARNING_GCC_CLANG_POP
 
 #endif // !C4_SUBSTR_NO_OSTREAM_LSHIFT
 
